@@ -1,1197 +1,254 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Simulação Legislativa — Escola de Líderes 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;700;900&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --vinho: #6B0F1A;
-    --vinho-escuro: #4a0a12;
-    --vinho-claro: #8b1525;
-    --dourado: #F5A623;
-    --dourado-escuro: #c8841a;
-    --branco: #ffffff;
-    --cinza-escuro: #1a1a1a;
-    --cinza-medio: #242424;
-    --cinza-borda: #333;
-    --texto: #f0f0f0;
-    --texto-fraco: #888;
-    --fonte-display: 'Bebas Neue', sans-serif;
-    --fonte-mono: 'IBM Plex Mono', monospace;
-    --fonte-corpo: 'IBM Plex Sans', sans-serif;
-  }
+// =============================================
+// SIMULAÇÃO LEGISLATIVA — Apps Script
+// =============================================
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+var SS = SpreadsheetApp.getActiveSpreadsheet();
 
-  body {
-    background: var(--cinza-escuro);
-    color: var(--texto);
-    font-family: var(--fonte-corpo);
-    min-height: 100vh;
-  }
+// ── Utilitários ────────────────────────────
 
-  /* ── LOGIN ── */
-  #tela-login {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: var(--cinza-escuro);
-    position: relative;
-    overflow: hidden;
-  }
-
-  #tela-login::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(107,15,26,0.4) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .login-logo-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2rem;
-    position: relative;
-    z-index: 1;
-  }
-
-  .login-escola {
-    font-family: var(--fonte-corpo);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.3em;
-    color: var(--texto-fraco);
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-  }
-
-  .login-titulo {
-    font-family: var(--fonte-display);
-    font-size: clamp(2rem, 7vw, 3.5rem);
-    letter-spacing: 0.05em;
-    line-height: 1;
-    text-align: center;
-    color: var(--branco);
-  }
-
-  .login-titulo span { color: var(--dourado); }
-
-  .login-subtitulo {
-    font-family: var(--fonte-mono);
-    font-size: 0.65rem;
-    color: var(--texto-fraco);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-top: 0.5rem;
-    text-align: center;
-  }
-
-  .login-box {
-    background: var(--cinza-medio);
-    border: 1px solid var(--cinza-borda);
-    border-radius: 12px;
-    padding: 2rem;
-    width: min(340px, 92vw);
-    position: relative;
-    z-index: 1;
-  }
-
-  .login-instrucao {
-    font-family: var(--fonte-mono);
-    font-size: 0.7rem;
-    color: var(--texto-fraco);
-    text-align: center;
-    margin-bottom: 1rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .pin-display {
-    background: var(--cinza-escuro);
-    border: 1px solid var(--cinza-borda);
-    border-radius: 8px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 1.2rem;
-  }
-
-  .pin-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid var(--cinza-borda);
-    transition: all 0.15s;
-  }
-  .pin-dot.ativo {
-    background: var(--dourado);
-    border-color: var(--dourado);
-    box-shadow: 0 0 8px rgba(245,166,35,0.5);
-  }
-
-  .teclado {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .tecla {
-    background: var(--cinza-escuro);
-    border: 1px solid var(--cinza-borda);
-    border-radius: 8px;
-    height: 52px;
-    font-family: var(--fonte-display);
-    font-size: 1.6rem;
-    color: var(--texto);
-    cursor: pointer;
-    transition: all 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .tecla:active, .tecla.pressed {
-    background: var(--dourado);
-    border-color: var(--dourado);
-    color: var(--vinho-escuro);
-    transform: scale(0.95);
-  }
-  .tecla.apagar { font-size: 1.2rem; color: var(--texto-fraco); }
-  .tecla.zero { grid-column: 2; }
-
-  #campo-id {
-    width: 100%;
-    background: var(--cinza-escuro);
-    border: 1px solid var(--cinza-borda);
-    border-radius: 8px;
-    padding: 10px 14px;
-    color: var(--texto);
-    font-family: var(--fonte-mono);
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
-    outline: none;
-  }
-  #campo-id::placeholder { color: var(--texto-fraco); }
-  #campo-id:focus { border-color: var(--dourado); }
-
-  .btn-login {
-    width: 100%;
-    background: var(--vinho);
-    color: var(--branco);
-    border: none;
-    border-radius: 8px;
-    height: 48px;
-    font-family: var(--fonte-display);
-    font-size: 1.3rem;
-    letter-spacing: 0.08em;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: all 0.15s;
-  }
-  .btn-login:hover { background: var(--vinho-claro); }
-  .btn-login:active { transform: scale(0.98); }
-
-  .login-erro {
-    color: #ff6b6b;
-    font-family: var(--fonte-mono);
-    font-size: 0.72rem;
-    text-align: center;
-    margin-top: 0.8rem;
-    min-height: 1em;
-  }
-
-  /* ── APP ── */
-  #app { display: none; flex-direction: column; min-height: 100vh; }
-
-  .header {
-    background: var(--vinho-escuro);
-    border-bottom: 2px solid var(--vinho);
-    padding: 0 1rem;
-    height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .header-titulo {
-    font-family: var(--fonte-display);
-    font-size: 1.1rem;
-    letter-spacing: 0.06em;
-    color: var(--branco);
-  }
-  .header-titulo span { color: var(--dourado); }
-
-  .header-direita {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .header-usuario {
-    font-family: var(--fonte-mono);
-    font-size: 0.65rem;
-    color: var(--dourado);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .btn-header {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 6px;
-    padding: 5px 10px;
-    font-family: var(--fonte-mono);
-    font-size: 0.65rem;
-    color: var(--texto);
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    transition: all 0.15s;
-  }
-  .btn-header:hover { border-color: var(--dourado); color: var(--dourado); }
-  .btn-header.admin-btn { border-color: var(--dourado); color: var(--dourado); }
-  .btn-header.admin-btn:hover { background: var(--dourado); color: var(--vinho-escuro); }
-
-  /* Conteúdo */
-  .conteudo {
-    flex: 1;
-    padding: 1.2rem 1rem;
-    max-width: 700px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  /* Seção de projeto */
-  .secao-titulo {
-    font-family: var(--fonte-display);
-    font-size: 1.1rem;
-    letter-spacing: 0.08em;
-    color: var(--dourado);
-    margin: 1.5rem 0 0.6rem;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--cinza-borda);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .secao-titulo:first-child { margin-top: 0; }
-
-  .secao-badge {
-    background: var(--vinho);
-    color: var(--branco);
-    font-family: var(--fonte-mono);
-    font-size: 0.6rem;
-    padding: 2px 7px;
-    border-radius: 4px;
-    letter-spacing: 0.05em;
-  }
-
-  /* Card de votação */
-  .card-votacao {
-    background: var(--cinza-medio);
-    border: 1px solid var(--cinza-borda);
-    border-radius: 10px;
-    margin-bottom: 8px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--cinza-borda);
-  }
-
-  .card-id {
-    font-family: var(--fonte-mono);
-    font-size: 0.75rem;
-    color: var(--dourado);
-    letter-spacing: 0.08em;
-    font-weight: 600;
-  }
-
-  .card-titulo-texto {
-    font-family: var(--fonte-corpo);
-    font-size: 0.82rem;
-    color: var(--texto);
-    font-weight: 600;
-    margin-left: 8px;
-    flex: 1;
-  }
-
-  .status-badge {
-    font-family: var(--fonte-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.06em;
-    padding: 3px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-  .status-badge.fechada { background: rgba(255,255,255,0.06); color: var(--texto-fraco); }
-  .status-badge.aberta { background: rgba(245,166,35,0.15); color: var(--dourado); }
-  .status-badge.encerrada { background: rgba(107,15,26,0.4); color: #ff9999; }
-  .status-badge.anulada { background: rgba(255,255,255,0.04); color: #666; text-decoration: line-through; }
-
-  /* Área de votação */
-  .card-corpo {
-    padding: 12px 14px;
-  }
-
-  /* Progresso */
-  .progresso-area {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  .progresso-barra-outer {
-    flex: 1;
-    background: var(--cinza-borda);
-    border-radius: 4px;
-    height: 6px;
-    overflow: hidden;
-  }
-
-  .progresso-barra-inner {
-    height: 100%;
-    background: var(--dourado);
-    border-radius: 4px;
-    transition: width 0.4s;
-  }
-
-  .progresso-texto {
-    font-family: var(--fonte-mono);
-    font-size: 0.65rem;
-    color: var(--texto-fraco);
-    white-space: nowrap;
-  }
-
-  /* Botões de voto */
-  .botoes-voto {
-    display: flex;
-    gap: 8px;
-  }
-
-  .btn-voto {
-    flex: 1;
-    height: 44px;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    font-family: var(--fonte-display);
-    font-size: 1rem;
-    letter-spacing: 0.06em;
-    cursor: pointer;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-  }
-
-  .btn-voto.sim {
-    background: rgba(0, 180, 100, 0.1);
-    border-color: rgba(0, 180, 100, 0.3);
-    color: #00b464;
-  }
-  .btn-voto.sim:hover, .btn-voto.sim.selecionado {
-    background: rgba(0, 180, 100, 0.25);
-    border-color: #00b464;
-    color: #00b464;
-  }
-
-  .btn-voto.nao {
-    background: rgba(220, 50, 50, 0.1);
-    border-color: rgba(220, 50, 50, 0.3);
-    color: #dc3232;
-  }
-  .btn-voto.nao:hover, .btn-voto.nao.selecionado {
-    background: rgba(220, 50, 50, 0.25);
-    border-color: #dc3232;
-    color: #dc3232;
-  }
-
-  .btn-voto.abstencao {
-    background: rgba(255,255,255,0.05);
-    border-color: rgba(255,255,255,0.1);
-    color: var(--texto-fraco);
-  }
-  .btn-voto.abstencao:hover, .btn-voto.abstencao.selecionado {
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.3);
-    color: var(--texto);
-  }
-
-  .btn-voto:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
-
-  .btn-voto.selecionado {
-    box-shadow: 0 0 10px currentColor;
-  }
-
-  /* Resultado */
-  .resultado-area {
-    margin-top: 4px;
-  }
-
-  .resultado-barras {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-
-  .resultado-linha {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .resultado-label {
-    font-family: var(--fonte-mono);
-    font-size: 0.65rem;
-    width: 70px;
-    letter-spacing: 0.05em;
-  }
-  .resultado-label.sim { color: #00b464; }
-  .resultado-label.nao { color: #dc3232; }
-  .resultado-label.abstencao { color: var(--texto-fraco); }
-
-  .resultado-barra-outer {
-    flex: 1;
-    background: var(--cinza-borda);
-    border-radius: 4px;
-    height: 8px;
-    overflow: hidden;
-  }
-
-  .resultado-barra-inner {
-    height: 100%;
-    border-radius: 4px;
-    transition: width 0.5s;
-  }
-  .resultado-barra-inner.sim { background: #00b464; }
-  .resultado-barra-inner.nao { background: #dc3232; }
-  .resultado-barra-inner.abstencao { background: #555; }
-
-  .resultado-count {
-    font-family: var(--fonte-mono);
-    font-size: 0.7rem;
-    width: 30px;
-    text-align: right;
-    color: var(--texto-fraco);
-  }
-
-  /* Detalhe de votos */
-  .detalhe-toggle {
-    width: 100%;
-    background: none;
-    border: none;
-    border-top: 1px solid var(--cinza-borda);
-    padding: 8px 14px;
-    font-family: var(--fonte-mono);
-    font-size: 0.62rem;
-    color: var(--texto-fraco);
-    cursor: pointer;
-    text-align: left;
-    letter-spacing: 0.06em;
-    transition: color 0.15s;
-    margin-top: 8px;
-  }
-  .detalhe-toggle:hover { color: var(--texto); }
-
-  .detalhe-lista {
-    display: none;
-    border-top: 1px solid var(--cinza-borda);
-    padding: 8px 14px;
-  }
-  .detalhe-lista.aberta { display: block; }
-
-  .detalhe-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 5px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 0.78rem;
-  }
-  .detalhe-item:last-child { border-bottom: none; }
-
-  .detalhe-nome { color: var(--texto); flex: 1; }
-  .detalhe-nome.eu { color: var(--dourado); font-weight: 700; }
-  .detalhe-nome.eu::after { content: ' ✦'; }
-
-  .detalhe-partido {
-    font-family: var(--fonte-mono);
-    font-size: 0.6rem;
-    color: var(--texto-fraco);
-    margin-left: 6px;
-  }
-
-  .detalhe-voto {
-    font-family: var(--fonte-mono);
-    font-size: 0.68rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .detalhe-voto.sim { background: rgba(0,180,100,0.15); color: #00b464; }
-  .detalhe-voto.nao { background: rgba(220,50,50,0.15); color: #dc3232; }
-  .detalhe-voto.abstencao { background: rgba(255,255,255,0.06); color: var(--texto-fraco); }
-  .detalhe-voto.ausente { background: none; color: #444; }
-
-  .anulada-aviso {
-    text-align: center;
-    padding: 12px;
-    font-family: var(--fonte-mono);
-    font-size: 0.7rem;
-    color: #555;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  /* Admin */
-  #tela-admin {
-    display: none;
-    padding: 1.2rem 1rem;
-    max-width: 700px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  .admin-titulo {
-    font-family: var(--fonte-display);
-    font-size: 1.6rem;
-    color: var(--dourado);
-    letter-spacing: 0.05em;
-    margin-bottom: 1rem;
-  }
-
-  .admin-card {
-    background: var(--cinza-medio);
-    border: 1px solid var(--cinza-borda);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
-  .admin-card-info {
-    flex: 1;
-    min-width: 120px;
-  }
-
-  .admin-card-id {
-    font-family: var(--fonte-mono);
-    font-size: 0.72rem;
-    color: var(--dourado);
-    letter-spacing: 0.06em;
-  }
-
-  .admin-card-status {
-    font-family: var(--fonte-mono);
-    font-size: 0.62rem;
-    color: var(--texto-fraco);
-    margin-top: 2px;
-  }
-
-  .admin-botoes {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .btn-admin {
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-family: var(--fonte-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    border: 1px solid;
-    transition: all 0.15s;
-    text-transform: uppercase;
-  }
-  .btn-admin.abrir { border-color: var(--dourado); color: var(--dourado); background: rgba(245,166,35,0.08); }
-  .btn-admin.abrir:hover { background: var(--dourado); color: var(--vinho-escuro); }
-  .btn-admin.encerrar { border-color: #ff9999; color: #ff9999; background: rgba(255,100,100,0.08); }
-  .btn-admin.encerrar:hover { background: #ff6666; color: white; }
-  .btn-admin.reabrir { border-color: #88aaff; color: #88aaff; background: rgba(100,150,255,0.08); }
-  .btn-admin.reabrir:hover { background: #6688ff; color: white; }
-  .btn-admin.anular { border-color: #555; color: #555; background: none; }
-  .btn-admin.anular:hover { background: #333; color: #888; }
-
-  /* Nav bottom */
-  .nav-bottom {
-    background: var(--vinho-escuro);
-    border-top: 1px solid var(--vinho);
-    display: flex;
-    position: sticky;
-    bottom: 0;
-    z-index: 100;
-  }
-
-  .nav-btn {
-    flex: 1;
-    padding: 10px 0;
-    background: none;
-    border: none;
-    font-family: var(--fonte-mono);
-    font-size: 0.6rem;
-    color: rgba(255,255,255,0.4);
-    cursor: pointer;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: color 0.15s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-  }
-  .nav-btn .icone { font-size: 1.1rem; }
-  .nav-btn:hover { color: rgba(255,255,255,0.7); }
-  .nav-btn.ativo { color: var(--dourado); }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    bottom: 70px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--cinza-medio);
-    border: 1px solid var(--cinza-borda);
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-family: var(--fonte-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    opacity: 0;
-    transition: all 0.3s;
-    pointer-events: none;
-    z-index: 999;
-    white-space: nowrap;
-  }
-  .toast.ok { border-color: var(--dourado); color: var(--dourado); }
-  .toast.erro { border-color: #ff6666; color: #ff6666; }
-  .toast.visivel { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  .loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem;
-    font-family: var(--fonte-mono);
-    font-size: 0.72rem;
-    color: var(--texto-fraco);
-    letter-spacing: 0.1em;
-  }
-  .loading::after {
-    content: '';
-    width: 16px;
-    height: 16px;
-    border: 2px solid var(--cinza-borda);
-    border-top-color: var(--dourado);
-    border-radius: 50%;
-    margin-left: 10px;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  @media (max-width: 480px) {
-    .btn-voto { font-size: 0.85rem; height: 40px; }
-  }
-</style>
-</head>
-<body>
-
-<!-- ══ LOGIN ══ -->
-<div id="tela-login">
-  <div class="login-logo-area">
-    <div class="login-escola">Escola de Líderes</div>
-    <div class="login-titulo">SIMULAÇÃO <span>LEGISLATIVA</span></div>
-    <div class="login-subtitulo">2026 · Digite seu ID e PIN para entrar</div>
-  </div>
-  <div class="login-box">
-    <div class="login-instrucao">Número do participante</div>
-    <input type="number" id="campo-id" placeholder="Seu número (ex: 1, 2, 3...)" min="1">
-    <div class="login-instrucao">PIN — 4 dígitos</div>
-    <div class="pin-display">
-      <div class="pin-dot" id="dot0"></div>
-      <div class="pin-dot" id="dot1"></div>
-      <div class="pin-dot" id="dot2"></div>
-      <div class="pin-dot" id="dot3"></div>
-    </div>
-    <div class="teclado">
-      <div class="tecla" data-n="1">1</div>
-      <div class="tecla" data-n="2">2</div>
-      <div class="tecla" data-n="3">3</div>
-      <div class="tecla" data-n="4">4</div>
-      <div class="tecla" data-n="5">5</div>
-      <div class="tecla" data-n="6">6</div>
-      <div class="tecla" data-n="7">7</div>
-      <div class="tecla" data-n="8">8</div>
-      <div class="tecla" data-n="9">9</div>
-      <div class="tecla apagar" data-n="del">⌫</div>
-      <div class="tecla zero" data-n="0">0</div>
-    </div>
-    <button class="btn-login" id="btn-entrar">ENTRAR</button>
-    <div class="login-erro" id="login-erro"></div>
-  </div>
-</div>
-
-<!-- ══ APP ══ -->
-<div id="app">
-  <div class="header">
-    <div class="header-titulo">SIM. <span>LEGISLATIVA</span></div>
-    <div class="header-direita">
-      <span class="header-usuario" id="header-nome"></span>
-      <button class="btn-header admin-btn" id="btn-admin-nav" onclick="mostrarTela('admin')" style="display:none">⚙ ADMIN</button>
-      <button class="btn-header" id="btn-sair">sair</button>
-    </div>
-  </div>
-
-  <div id="tela-votacoes">
-    <div class="conteudo" id="lista-votacoes">
-      <div class="loading">CARREGANDO</div>
-    </div>
-  </div>
-
-  <div id="tela-admin">
-    <div class="admin-titulo">⚙ PAINEL ADMIN</div>
-    <div id="admin-lista"></div>
-  </div>
-
-  <nav class="nav-bottom">
-    <button class="nav-btn ativo" id="nav-votacoes" onclick="mostrarTela('votacoes')">
-      <span class="icone">🗳</span>VOTAÇÕES
-    </button>
-  </nav>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbx9iR3Z2rU7r7Gz7LawmOsTYTOKJxJ7FKXEHqD6KNjdwiL6YFvxhOk1fsUjs1C7aPDt/exec';
-
-// ── Estado ──
-let usuario = null;
-let votacoes = [];
-let progressos = {};
-let resultados = {};
-let meusVotos = {};
-let pinAtual = '';
-let intervaloProgresso = null;
-
-// ── API ──
-async function api(action, params) {
-  const body = { action, user_id: usuario?.id, pin: usuario?.pin, ...params };
-  const r = await fetch(API_URL, {
-    method: 'POST',
-    body: JSON.stringify(body),
-    headers: { 'Content-Type': 'text/plain' }
-  });
-  return r.json();
+function getSheet(name) {
+  return SS.getSheetByName(name);
 }
 
-// ── Login ──
-document.querySelectorAll('.tecla').forEach(t => {
-  t.addEventListener('click', () => {
-    const n = t.dataset.n;
-    t.classList.add('pressed');
-    setTimeout(() => t.classList.remove('pressed'), 120);
-    if (n === 'del') { pinAtual = pinAtual.slice(0, -1); }
-    else if (pinAtual.length < 4) { pinAtual += n; }
-    atualizarDots();
+function sheetData(name) {
+  var sh = getSheet(name);
+  var rows = sh.getDataRange().getValues();
+  var headers = rows[0];
+  return rows.slice(1).map(function(row) {
+    var obj = {};
+    headers.forEach(function(h, i) { obj[h] = row[i]; });
+    return obj;
   });
-});
-
-function atualizarDots() {
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('dot' + i).classList.toggle('ativo', i < pinAtual.length);
-  }
 }
 
-document.getElementById('btn-entrar').addEventListener('click', fazerLogin);
+function json(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-async function fazerLogin() {
-  const id = document.getElementById('campo-id').value.trim();
-  const erroEl = document.getElementById('login-erro');
-  if (!id) { erroEl.textContent = 'Informe seu número de participante'; return; }
-  if (pinAtual.length !== 4) { erroEl.textContent = 'Digite os 4 dígitos do PIN'; return; }
-  erroEl.textContent = '';
-  document.getElementById('btn-entrar').textContent = 'ENTRANDO...';
+function erro(msg) {
+  return json({ ok: false, erro: msg });
+}
+
+// ── Autenticação ───────────────────────────
+
+function autenticar(user_id, pin) {
+  var participantes = sheetData('participantes');
+  var p = participantes.find(function(r) {
+    return String(r.id) === String(user_id) && String(r.pin) === String(pin);
+  });
+  return p || null;
+}
+
+// ── Roteador principal ─────────────────────
+
+function doPost(e) {
   try {
-    const r = await fetch(API_URL, {
-      method: 'POST',
-      body: JSON.stringify({ action: 'login', user_id: id, pin: pinAtual }),
-      headers: { 'Content-Type': 'text/plain' }
-    });
-    const data = await r.json();
-    if (data.ok) {
-      usuario = { id: data.id, nome: data.nome, partido: data.partido, admin: data.admin, pin: pinAtual };
-      localStorage.setItem('simulacao_usuario', JSON.stringify(usuario));
-      entrar();
-    } else {
-      erroEl.textContent = 'ID ou PIN incorreto.';
-      pinAtual = ''; atualizarDots();
-    }
-  } catch(e) { erroEl.textContent = 'Erro de conexão.'; }
-  document.getElementById('btn-entrar').textContent = 'ENTRAR';
-}
+    var params = JSON.parse(e.postData.contents);
+    var action = params.action;
 
-async function entrar() {
-  document.getElementById('tela-login').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('app').style.flexDirection = 'column';
-  document.getElementById('header-nome').textContent = usuario.nome;
-if (usuario.admin === true) document.getElementById('btn-admin-nav').style.display = 'inline-flex';  await carregarTudo();
-  iniciarAtualizacaoAutomatica();
-}
+    if (action === 'login')                return acao_login(params);
+    if (action === 'buscar_votacoes')      return acao_buscar_votacoes(params);
+    if (action === 'registrar_voto')       return acao_registrar_voto(params);
+    if (action === 'buscar_meu_voto')      return acao_buscar_meu_voto(params);
+    if (action === 'buscar_resultado')     return acao_buscar_resultado(params);
+    if (action === 'buscar_progresso')     return acao_buscar_progresso(params);
+    if (action === 'admin_abrir')          return acao_admin_abrir(params);
+    if (action === 'admin_encerrar')       return acao_admin_encerrar(params);
+    if (action === 'admin_reabrir')        return acao_admin_reabrir(params);
+    if (action === 'admin_anular')         return acao_admin_anular(params);
 
-// ── Dados ──
-async function carregarTudo() {
-  const r = await api('buscar_votacoes');
-  if (!r.ok) return;
-  votacoes = r.votacoes;
-  await carregarMeusVotos();
-  await carregarProgressos();
-  await carregarResultados();
-  renderizarVotacoes();
-}
-
-async function carregarMeusVotos() {
-  for (const v of votacoes) {
-    const r = await api('buscar_meu_voto', { votacao_id: v.id });
-    if (r.ok && r.voto) meusVotos[v.id] = r.voto;
+    return erro('Ação desconhecida: ' + action);
+  } catch(err) {
+    return erro('Erro interno: ' + err.message);
   }
 }
 
-async function carregarProgressos() {
-  for (const v of votacoes) {
-    if (v.status === 'aberta') {
-      const r = await api('buscar_progresso', { votacao_id: v.id });
-      if (r.ok) progressos[v.id] = r;
-    }
-  }
-}
+// ── Ações ──────────────────────────────────
 
-async function carregarResultados() {
-  for (const v of votacoes) {
-    if (v.status === 'encerrada' || v.status === 'anulada') {
-      const r = await api('buscar_resultado', { votacao_id: v.id });
-      if (r.ok) resultados[v.id] = r;
-    }
-  }
-}
-
-function iniciarAtualizacaoAutomatica() {
-  if (intervaloProgresso) clearInterval(intervaloProgresso);
-  intervaloProgresso = setInterval(async () => {
-    const r = await api('buscar_votacoes');
-    if (!r.ok) return;
-    const statusAntes = {};
-    votacoes.forEach(v => { statusAntes[v.id] = v.status; });
-    votacoes = r.votacoes;
-    let mudou = false;
-    for (const v of votacoes) {
-      if (statusAntes[v.id] !== v.status) { mudou = true; break; }
-      if (v.status === 'aberta') {
-        const rp = await api('buscar_progresso', { votacao_id: v.id });
-        if (rp.ok) progressos[v.id] = rp;
-      }
-    }
-    if (mudou) {
-      await carregarMeusVotos();
-      await carregarResultados();
-    }
-    renderizarVotacoes();
-  }, 10000);
-}
-
-// ── Render ──
-function renderizarVotacoes() {
-  const lista = document.getElementById('lista-votacoes');
-  lista.innerHTML = '';
-
-  const grupos = [
-    { label: 'PL 001/2026', badge: 'PROJETO 1', ids: ['E1A','E1B','E1C','E1D','E1E','PL1'] },
-    { label: 'PL 002/2026', badge: 'PROJETO 2', ids: ['E2A','E2B','E2C','E2D','E2E','PL2'] },
-    { label: 'PL 003/2026', badge: 'PROJETO 3', ids: ['E3A','E3B','E3C','E3D','E3E','PL3'] },
-  ];
-
-  grupos.forEach(grupo => {
-    const secao = document.createElement('div');
-    secao.className = 'secao-titulo';
-    secao.innerHTML = `<span class="secao-badge">${grupo.badge}</span> ${grupo.label}`;
-    lista.appendChild(secao);
-
-    grupo.ids.forEach(id => {
-      const votacao = votacoes.find(v => v.id === id);
-      if (!votacao) return;
-      const card = criarCardVotacao(votacao);
-      lista.appendChild(card);
-    });
+function acao_login(p) {
+  var participante = autenticar(p.user_id, p.pin);
+  if (!participante) return erro('PIN inválido');
+  return json({
+    ok: true,
+    id: participante.id,
+    nome: participante.nome,
+    partido: participante.partido,
+    admin: participante.admin === true || String(participante.admin).toLowerCase() === 'true'
+    bancada: participante.bancada
   });
 }
 
-function criarCardVotacao(votacao) {
-  const card = document.createElement('div');
-  card.className = 'card-votacao';
-  card.id = 'card-' + votacao.id;
+function acao_buscar_votacoes(p) {
+  var participante = autenticar(p.user_id, p.pin);
+  if (!participante) return erro('PIN inválido');
 
-  const statusLabel = { fechada: 'FECHADA', aberta: 'ABERTA', encerrada: 'ENCERRADA', anulada: 'ANULADA' };
-
-  // Header
-  const header = document.createElement('div');
-  header.className = 'card-header';
-  header.innerHTML = `
-    <span class="card-id">${votacao.id}</span>
-    <span class="card-titulo-texto">${votacao.titulo}</span>
-    <span class="status-badge ${votacao.status}">${statusLabel[votacao.status] || votacao.status}</span>
-  `;
-  card.appendChild(header);
-
-  const corpo = document.createElement('div');
-  corpo.className = 'card-corpo';
-
-  if (votacao.status === 'fechada') {
-    corpo.innerHTML = `<div style="font-family:var(--fonte-mono);font-size:0.65rem;color:#444;letter-spacing:0.08em;text-align:center;padding:8px 0">AGUARDANDO ABERTURA</div>`;
-
-  } else if (votacao.status === 'aberta') {
-    // Progresso
-    const prog = progressos[votacao.id];
-    if (prog) {
-      const pct = prog.total > 0 ? Math.round((prog.votaram / prog.total) * 100) : 0;
-      corpo.innerHTML = `
-        <div class="progresso-area">
-          <div class="progresso-barra-outer">
-            <div class="progresso-barra-inner" style="width:${pct}%"></div>
-          </div>
-          <span class="progresso-texto">${prog.votaram} de ${prog.total} votaram</span>
-        </div>
-      `;
-    }
-
-    // Botões de voto
-    const meuVoto = meusVotos[votacao.id] || null;
-    const botoesDiv = document.createElement('div');
-    botoesDiv.className = 'botoes-voto';
-
-    ['sim', 'nao', 'abstencao'].forEach(opcao => {
-      const labels = { sim: '✓ SIM', nao: '✗ NÃO', abstencao: '— ABST.' };
-      const btn = document.createElement('button');
-      btn.className = `btn-voto ${opcao}${meuVoto === opcao ? ' selecionado' : ''}`;
-      btn.textContent = labels[opcao];
-      btn.addEventListener('click', () => registrarVoto(votacao.id, opcao));
-      botoesDiv.appendChild(btn);
-    });
-    corpo.appendChild(botoesDiv);
-
-  } else if (votacao.status === 'encerrada') {
-    const res = resultados[votacao.id];
-    if (res) {
-      const total = res.contagem.sim + res.contagem.nao + res.contagem.abstencao;
-      corpo.innerHTML = renderizarResultado(res, total);
-    }
-
-  } else if (votacao.status === 'anulada') {
-    corpo.innerHTML = `<div class="anulada-aviso">⊘ VOTAÇÃO ANULADA</div>`;
-  }
-
-  card.appendChild(corpo);
-
-  // Detalhe expandível (encerrada)
-  if (votacao.status === 'encerrada' && resultados[votacao.id]) {
-    const toggle = document.createElement('button');
-    toggle.className = 'detalhe-toggle';
-    toggle.textContent = '▼ ver como cada um votou';
-    const detalhe = document.createElement('div');
-    detalhe.className = 'detalhe-lista';
-    detalhe.id = 'detalhe-' + votacao.id;
-
-    toggle.addEventListener('click', () => {
-      const aberta = detalhe.classList.contains('aberta');
-      if (!aberta) {
-        renderizarDetalhe(detalhe, resultados[votacao.id]);
-        detalhe.classList.add('aberta');
-        toggle.textContent = '▲ fechar';
-      } else {
-        detalhe.classList.remove('aberta');
-        toggle.textContent = '▼ ver como cada um votou';
-      }
-    });
-
-    card.appendChild(toggle);
-    card.appendChild(detalhe);
-  }
-
-  return card;
+  var votacoes = sheetData('votacoes');
+  return json({ ok: true, votacoes: votacoes });
 }
 
-function renderizarResultado(res, total) {
-  const pcts = {
-    sim: total > 0 ? Math.round((res.contagem.sim / total) * 100) : 0,
-    nao: total > 0 ? Math.round((res.contagem.nao / total) * 100) : 0,
-    abstencao: total > 0 ? Math.round((res.contagem.abstencao / total) * 100) : 0,
-  };
-  return `
-    <div class="resultado-barras">
-      <div class="resultado-linha">
-        <span class="resultado-label sim">✓ SIM</span>
-        <div class="resultado-barra-outer"><div class="resultado-barra-inner sim" style="width:${pcts.sim}%"></div></div>
-        <span class="resultado-count">${res.contagem.sim}</span>
-      </div>
-      <div class="resultado-linha">
-        <span class="resultado-label nao">✗ NÃO</span>
-        <div class="resultado-barra-outer"><div class="resultado-barra-inner nao" style="width:${pcts.nao}%"></div></div>
-        <span class="resultado-count">${res.contagem.nao}</span>
-      </div>
-      <div class="resultado-linha">
-        <span class="resultado-label abstencao">— ABST.</span>
-        <div class="resultado-barra-outer"><div class="resultado-barra-inner abstencao" style="width:${pcts.abstencao}%"></div></div>
-        <span class="resultado-count">${res.contagem.abstencao}</span>
-      </div>
-    </div>
-  `;
+function acao_registrar_voto(p) {
+  var participante = autenticar(p.user_id, p.pin);
+  if (!participante) return erro('PIN inválido');
+
+  // Verifica se a votação está aberta
+  var votacoes = sheetData('votacoes');
+  var votacao = votacoes.find(function(v) {
+    return String(v.id) === String(p.votacao_id);
+  });
+
+  if (!votacao) return erro('Votação não encontrada');
+  if (votacao.status !== 'aberta') return erro('Votação não está aberta');
+
+  // Valida o voto
+  var votosValidos = ['sim', 'nao', 'abstencao'];
+  if (votosValidos.indexOf(p.voto) === -1) return erro('Voto inválido');
+
+  var sh = getSheet('votos');
+  var linhas = sh.getDataRange().getValues();
+  var agora = new Date().toISOString();
+
+  // Atualiza voto existente
+  for (var i = 1; i < linhas.length; i++) {
+    if (String(linhas[i][0]) === String(p.user_id) &&
+        String(linhas[i][1]) === String(p.votacao_id)) {
+      sh.getRange(i + 1, 3).setValue(p.voto);
+      sh.getRange(i + 1, 4).setValue(agora);
+      return json({ ok: true, acao: 'atualizado' });
+    }
+  }
+
+  // Insere novo voto
+  sh.appendRow([p.user_id, p.votacao_id, p.voto, agora]);
+  return json({ ok: true, acao: 'inserido' });
 }
 
-function renderizarDetalhe(el, res) {
-  el.innerHTML = '';
-  res.detalhe.forEach(p => {
-    const eu = String(p.id) === String(usuario.id);
-    const item = document.createElement('div');
-    item.className = 'detalhe-item';
-    const votoLabel = { sim: 'SIM', nao: 'NÃO', abstencao: 'ABST.' };
-    const votoCls = p.voto || 'ausente';
-    item.innerHTML = `
-      <span class="detalhe-nome ${eu?'eu':''}">${p.nome}</span>
-      <span class="detalhe-partido">${p.partido || ''}</span>
-      <span class="detalhe-voto ${votoCls}">${p.voto ? votoLabel[p.voto] : '—'}</span>
-    `;
-    el.appendChild(item);
+function acao_buscar_meu_voto(p) {
+  var participante = autenticar(p.user_id, p.pin);
+  if (!participante) return erro('PIN inválido');
+
+  var votos = sheetData('votos');
+  var meuVoto = votos.find(function(v) {
+    return String(v.user_id) === String(p.user_id) &&
+           String(v.votacao_id) === String(p.votacao_id);
+  });
+
+  return json({ ok: true, voto: meuVoto ? meuVoto.voto : null });
+}
+
+function acao_buscar_progresso(p) {
+  var participante = autenticar(p.user_id, p.pin);
+  if (!participante) return erro('PIN inválido');
+
+  var votos = sheetData('votos');
+  var participantes = sheetData('participantes');
+
+  var votaram = votos.filter(function(v) {
+    return String(v.votacao_id) === String(p.votacao_id);
+  }).length;
+
+  return json({
+    ok: true,
+    votaram: votaram,
+    total: participantes.length
   });
 }
 
-// ── Votar ──
-async function registrarVoto(votacao_id, voto) {
-  const r = await api('registrar_voto', { votacao_id, voto });
-  if (r.ok) {
-    meusVotos[votacao_id] = voto;
-    const prog = progressos[votacao_id];
-    if (prog) {
-      const rp = await api('buscar_progresso', { votacao_id });
-      if (rp.ok) progressos[votacao_id] = rp;
-    }
-    renderizarVotacoes();
-    toast('Voto registrado!', 'ok');
-  } else {
-    toast(r.erro || 'Erro ao votar', 'erro');
+function acao_buscar_resultado(p) {
+  var participante = autenticar(p.user_id, p.pin);
+  if (!participante) return erro('PIN inválido');
+
+  // Verifica se a votação está encerrada (ou anulada)
+  var votacoes = sheetData('votacoes');
+  var votacao = votacoes.find(function(v) {
+    return String(v.id) === String(p.votacao_id);
+  });
+
+  if (!votacao) return erro('Votação não encontrada');
+  if (votacao.status !== 'encerrada' && votacao.status !== 'anulada') {
+    return erro('Resultado ainda não disponível');
   }
-}
 
-// ── Admin ──
-function renderizarAdmin() {
-  const lista = document.getElementById('admin-lista');
-  lista.innerHTML = '';
+  var votos = sheetData('votos');
+  var participantes = sheetData('participantes');
 
-  const statusLabel = { fechada: 'fechada', aberta: 'aberta', encerrada: 'encerrada', anulada: 'anulada' };
+  var doJogo = votos.filter(function(v) {
+    return String(v.votacao_id) === String(p.votacao_id);
+  });
 
-  votacoes.forEach(v => {
-    const card = document.createElement('div');
-    card.className = 'admin-card';
-    card.innerHTML = `
-      <div class="admin-card-info">
-        <div class="admin-card-id">${v.id} — ${v.titulo}</div>
-        <div class="admin-card-status">status: ${statusLabel[v.status] || v.status}</div>
-      </div>
-      <div class="admin-botoes" id="admin-btns-${v.id}"></div>
-    `;
-    const btns = card.querySelector('#admin-btns-' + v.id);
+  // Contagem geral
+  var contagem = { sim: 0, nao: 0, abstencao: 0 };
+  doJogo.forEach(function(v) {
+    if (contagem[v.voto] !== undefined) contagem[v.voto]++;
+  });
 
-    if (v.status === 'fechada') {
-      btns.innerHTML += `<button class="btn-admin abrir" onclick="adminAcao('abrir','${v.id}')">ABRIR</button>`;
-    }
-    if (v.status === 'aberta') {
-      btns.innerHTML += `<button class="btn-admin encerrar" onclick="adminAcao('encerrar','${v.id}')">ENCERRAR</button>`;
-      btns.innerHTML += `<button class="btn-admin anular" onclick="adminAcao('anular','${v.id}')">ANULAR</button>`;
-    }
-    if (v.status === 'encerrada') {
-      btns.innerHTML += `<button class="btn-admin reabrir" onclick="adminAcao('reabrir','${v.id}')">REABRIR</button>`;
-      btns.innerHTML += `<button class="btn-admin anular" onclick="adminAcao('anular','${v.id}')">ANULAR</button>`;
-    }
-    if (v.status === 'anulada') {
-      btns.innerHTML += `<button class="btn-admin reabrir" onclick="adminAcao('reabrir','${v.id}')">REABRIR</button>`;
-    }
+  // Detalhe por participante
+  var detalhe = participantes.map(function(part) {
+    var voto = doJogo.find(function(v) {
+      return String(v.user_id) === String(part.id);
+    });
+    return {
+      id: part.id,
+      nome: part.nome,
+      partido: part.partido,
+      voto: voto ? voto.voto : null
+    };
+  });
 
-    lista.appendChild(card);
+  return json({
+    ok: true,
+    status: votacao.status,
+    contagem: contagem,
+    detalhe: detalhe
   });
 }
 
-async function adminAcao(acao, votacao_id) {
-  const acoes = { abrir: 'admin_abrir', encerrar: 'admin_encerrar', reabrir: 'admin_reabrir', anular: 'admin_anular' };
-  const r = await api(acoes[acao], { votacao_id });
-  if (r.ok) {
-    await carregarTudo();
-    renderizarAdmin();
-    toast('Feito!', 'ok');
-  } else {
-    toast(r.erro || 'Erro', 'erro');
+// ── Ações Admin ────────────────────────────
+
+function verificarAdmin(user_id, pin) {
+  var participante = autenticar(user_id, pin);
+  if (!participante) return null;
+  if (participante.admin !== true && participante.admin !== 'true') return null;
+  return participante;
+}
+
+function atualizarStatusVotacao(votacao_id, novoStatus) {
+  var sh = getSheet('votacoes');
+  var linhas = sh.getDataRange().getValues();
+  for (var i = 1; i < linhas.length; i++) {
+    if (String(linhas[i][0]) === String(votacao_id)) {
+      sh.getRange(i + 1, 3).setValue(novoStatus);
+      return true;
+    }
   }
+  return false;
 }
 
-// ── Navegação ──
-function mostrarTela(tela) {
-  document.getElementById('tela-votacoes').style.display = tela === 'votacoes' ? 'block' : 'none';
-  document.getElementById('tela-admin').style.display = tela === 'admin' ? 'block' : 'none';
-  document.getElementById('nav-votacoes').classList.toggle('ativo', tela === 'votacoes');
-  if (tela === 'admin') renderizarAdmin();
+function acao_admin_abrir(p) {
+  if (!verificarAdmin(p.user_id, p.pin)) return erro('Acesso negado');
+  var ok = atualizarStatusVotacao(p.votacao_id, 'aberta');
+  if (!ok) return erro('Votação não encontrada');
+  return json({ ok: true });
 }
 
-// ── Utils ──
-let toastTimer = null;
-function toast(msg, tipo) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'toast ' + tipo + ' visivel';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('visivel'), 3000);
+function acao_admin_encerrar(p) {
+  if (!verificarAdmin(p.user_id, p.pin)) return erro('Acesso negado');
+  var ok = atualizarStatusVotacao(p.votacao_id, 'encerrada');
+  if (!ok) return erro('Votação não encontrada');
+  return json({ ok: true });
 }
 
-document.getElementById('btn-sair').addEventListener('click', () => {
-  localStorage.removeItem('simulacao_usuario');
-  if (intervaloProgresso) clearInterval(intervaloProgresso);
-  usuario = null; pinAtual = ''; votacoes = []; meusVotos = {}; progressos = {}; resultados = {};
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('tela-login').style.display = 'flex';
-  document.getElementById('campo-id').value = '';
-  atualizarDots();
-});
-
-// Login automático
-const sessaoSalva = localStorage.getItem('simulacao_usuario');
-if (sessaoSalva) {
-  usuario = JSON.parse(sessaoSalva);
-  entrar();
+function acao_admin_reabrir(p) {
+  if (!verificarAdmin(p.user_id, p.pin)) return erro('Acesso negado');
+  var ok = atualizarStatusVotacao(p.votacao_id, 'aberta');
+  if (!ok) return erro('Votação não encontrada');
+  return json({ ok: true });
 }
-</script>
-</body>
-</html>
+
+function acao_admin_anular(p) {
+  if (!verificarAdmin(p.user_id, p.pin)) return erro('Acesso negado');
+  var ok = atualizarStatusVotacao(p.votacao_id, 'anulada');
+  if (!ok) return erro('Votação não encontrada');
+  return json({ ok: true });
+}
