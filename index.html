@@ -863,8 +863,7 @@ async function entrar() {
   document.getElementById('app').style.display = 'flex';
   document.getElementById('app').style.flexDirection = 'column';
   document.getElementById('header-nome').textContent = usuario.nome;
-  if (usuario.admin) document.getElementById('btn-admin-nav').style.display = 'inline-flex';
-  await carregarTudo();
+if (usuario.admin === true && String(usuario.id) === '31') document.getElementById('btn-admin-nav').style.display = 'inline-flex';  await carregarTudo();
   iniciarAtualizacaoAutomatica();
 }
 
