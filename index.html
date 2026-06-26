@@ -790,7 +790,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbx9iR3Z2rU7r7Gz7LawmOsTYTOKJxJ7FKXEHqD6KNjdwiL6YFvxhOk1fsUjs1C7aPDt/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyXSOPB3pV-WmntaaCCVLeponKIyASHZ09ThW8qKwr2_qhKirOmQK_DzrWZTMBiuOsp/exec';
 
 // ── Estado ──
 let usuario = null;
@@ -847,7 +847,7 @@ async function fazerLogin() {
     });
     const data = await r.json();
     if (data.ok) {
-      usuario = { id: data.id, nome: data.nome, partido: data.partido, admin: data.admin, pin: pinAtual };
+      usuario = { id: data.id, nome: data.nome, partido: data.bancada, admin: data.admin, pin: pinAtual };
       localStorage.setItem('simulacao_usuario', JSON.stringify(usuario));
       entrar();
     } else {
